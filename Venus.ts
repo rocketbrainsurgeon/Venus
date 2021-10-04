@@ -37,29 +37,27 @@ export const mint = async (vToken: VToken, amount: BigNumber): Promise<void> => 
 
   if(balance.lt(amount)) throw new Error("Don't have enough BNB.");
 
-  let overrides = {value:amount};
-
-  const tx = vToken.symbol === "vBNB" ? await contract.mint(overrides) : await contract.mint(amount, overrides);
+  const tx = vToken.symbol === "vBNB" ? await contract.mint({value:amount}) : await contract.mint(amount);
   const receipt = await tx.wait();
 
-  console.log(receipt);
+  console.log("mint(" + vToken.symbol + ")tx hash: " + receipt.transactionHash);
 
   return Promise.resolve();
 }
 
 //redeems all of outstanding balance
 export const redeem = async (vToken: VToken): Promise<void> => {
-  const method = vToken.symbol === "vBNB" ? "redeemUnderlying(uint256)" : "redeem(uint256)";
+  //const method = vToken.symbol === "vBNB" ? "redeem(uint256)" : "redeemUnderlying(uint256)";
 
   const contract = await getVTokenContract(vToken);
   
   const balance = await contract.balanceOf(CONFIG.WALLET);
   if(balance.lte(0)) throw new Error("No balance to redeem!");
 
-  const tx = await contract[method](balance);
+  const tx = await contract.redeem(balance);
   const receipt = await tx.wait();
 
-  console.log(receipt);
+  console.log("redeem(" + vToken.symbol + ")tx hash: " + receipt.transactionHash);
 
   return Promise.resolve();
 }
@@ -87,7 +85,7 @@ export const borrow = async (vToken: VToken, amount: BigNumber): Promise<void> =
   const tx = await contract.borrow(amount);
   const receipt = await tx.wait();
 
-  console.log(receipt);
+  console.log("borrow(" + vToken.symbol + ") tx hash: " + receipt);
 
   return Promise.resolve();
 }
@@ -103,7 +101,7 @@ export const repay = async (vToken: VToken): Promise<void> => {
   const tx = await contract.repayBorrow(borrowBalance);
   const receipt = await tx.wait();
 
-  console.log(receipt);
+  console.log("repay(" + vToken.symbol + ") tx hash: " + receipt);
 
   return Promise.resolve();
 }
