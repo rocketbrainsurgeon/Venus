@@ -1,17 +1,16 @@
 import { ethers, BigNumber } from "ethers";
-import { VBNB, VBEP20, UNITROLLER } from "./ABI/vToken.js";
+import { VBNB, VBEP20, UNITROLLER } from "./ABI/vToken";
 import * as CONFIG from "./env.json";
 
-interface VToken {
+export interface VToken {
   decimals: number,
   symbol: string,
   name: string,
-  chainId: number,
   address: string,
-  underlying: string
+  underlying: string | null
 }
 
-const getConnection = (): [ethers.Wallet, ethers.providers.JsonRpcProvider] => {
+export const getConnection = (): [ethers.Wallet, ethers.providers.JsonRpcProvider] => {
   const p = new ethers.providers.JsonRpcProvider(CONFIG.RPC);
   return [new ethers.Wallet(CONFIG.KEY, p),p];
 }
@@ -34,8 +33,12 @@ const getUnitrollerContract = async (): Promise<ethers.Contract> => {
 export const mint = async (vToken: VToken, amount: BigNumber): Promise<void> => {
   const [wallet,] = getConnection();
   const contract = await getVTokenContract(vToken);
+  const balance: BigNumber = await wallet.getBalance();
 
-  if(await wallet.getBalance() > amount) throw new Error("Don't have enough BNB.");
+  console.log(balance);
+  console.log(amount);
+
+  if(balance.lt(amount)) throw new Error("Don't have enough BNB.");
 
   const tx = await contract.mint(amount);
   const receipt = await tx.wait();
@@ -104,4 +107,22 @@ export const repay = async (vToken: VToken): Promise<void> => {
   console.log(receipt);
 
   return Promise.resolve();
+}
+
+export const getVTokens = async (): Promise<VToken[]> => {
+  const [,provider] = getConnection();
+  let vTokens: VToken[] = [];
+  for(let i = 0; i < CONFIG.VTOKENS.length; i++) {
+    const v = CONFIG.VTOKENS[i]
+    const contract = new ethers.Contract(v.address,v.name === "vBNB" ? VBNB : VBEP20, provider);
+    const vt = {
+      decimals: await contract.decimals(),
+      symbol: await contract.symbol(),
+      name: await contract.name(),
+      address: v.address,
+      underlying: v.name === "vBNB" ? null : await contract.underlying()
+    };
+    vTokens.push(vt);
+  }
+  return vTokens;
 }
