@@ -11,12 +11,13 @@ const init = async (): Promise<void> => {
   const eth = ethers.utils.parseEther(""+Math.floor(parseFloat(ethers.utils.formatEther(balance))));
 
   //mint
+/*
   try {
     await Venus.mint(vBNB as Venus.VToken, eth);
   } catch(e) {
     console.log(e);
   }
-/*
+
   //borrow
   try {
     await Venus.borrowSafe(vBNB as Venus.VToken);
@@ -24,20 +25,20 @@ const init = async (): Promise<void> => {
     console.log(e);
   }
 
-  //redeem
+  //repay
   try {
     await Venus.repay(vBNB as Venus.VToken);
   } catch(e) {
     console.log(e);
   }
-
-  //withdraw
+*/
+  //redeem
   try {
     await Venus.redeem(vBNB as Venus.VToken);
   } catch(e) {
     console.log(e);
   }
-*/
+
 }
 
 

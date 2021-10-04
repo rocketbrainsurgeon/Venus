@@ -35,12 +35,11 @@ export const mint = async (vToken: VToken, amount: BigNumber): Promise<void> => 
   const contract = await getVTokenContract(vToken);
   const balance: BigNumber = await wallet.getBalance();
 
-  console.log(balance);
-  console.log(amount);
-
   if(balance.lt(amount)) throw new Error("Don't have enough BNB.");
 
-  const tx = await contract.mint(amount);
+  let overrides = {value:amount};
+
+  const tx = vToken.symbol === "vBNB" ? await contract.mint(overrides) : await contract.mint(amount, overrides);
   const receipt = await tx.wait();
 
   console.log(receipt);
@@ -55,7 +54,7 @@ export const redeem = async (vToken: VToken): Promise<void> => {
   const contract = await getVTokenContract(vToken);
   
   const balance = await contract.balanceOf(CONFIG.WALLET);
-  if(balance <= 0) throw new Error("No balance to redeem!");
+  if(balance.lte(0)) throw new Error("No balance to redeem!");
 
   const tx = await contract[method](balance);
   const receipt = await tx.wait();
