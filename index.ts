@@ -9,36 +9,36 @@ const init = async (): Promise<void> => {
   
   const balance = await wallet.getBalance();
   //const eth = ethers.utils.parseEther(""+Math.floor(parseFloat(ethers.utils.formatEther(balance))));
-  const eth = BigNumber.from(1000);
+  const eth = BigNumber.from(1e10);
 
   //mint
   try {
-    await Venus.mint(vBNB, eth);
+    //await Venus.mint(vBNB, eth);
   } catch(e) {
     console.log(e);
   }
-/*
+
   //borrow
   try {
     await Venus.borrowSafe(vBNB);
   } catch(e) {
     console.log(e);
   }
-
+/*
   //repay
   try {
     await Venus.repay(vBNB);
   } catch(e) {
     console.log(e);
   }
-*/
+
   //redeem
   try {
     await Venus.redeem(vBNB);
   } catch(e) {
     console.log(e);
   }
-
+*/
 }
 
 

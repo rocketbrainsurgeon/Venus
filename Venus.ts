@@ -24,9 +24,10 @@ const getVTokenContract = async (token: VToken): Promise<ethers.Contract> => {
 }
 
 const getUnitrollerContract = async (): Promise<ethers.Contract> => {
-  const [wallet,] = getConnection();
-  const contract = new ethers.Contract(CONFIG.UNITROLLER, UNITROLLER, wallet);
-  return contract;
+  const [wallet, ] = getConnection();
+  const proxy = new ethers.Contract(CONFIG.UNITROLLER, UNITROLLER, wallet);
+
+  return proxy;
 }
 
 //supply
@@ -68,14 +69,16 @@ export const borrowSafe = async (vToken: VToken): Promise<void> => {
   const contract = await getUnitrollerContract();
 
   const [,collateralFactor,] = await contract.markets(vToken.address);
-  const safePercent = BigNumber.from(collateralFactor / 1e18 / 2);
-  
+
   const vTokenContract = await getVTokenContract(vToken);
   const [,deposit,debt,] = await vTokenContract.getAccountSnapshot(wallet.address);
-  
-  const maxSafeBorrow = deposit.multipliedBy(safePercent);
-
-  return await borrow(vToken, BigNumber.from(maxSafeBorrow - debt));
+console.log("deposit: " + deposit);
+console.log("debt: " + debt);
+  const maxSafeBorrow: BigNumber = deposit.mul(collateralFactor).div(2);
+console.log("maxSafeBorrow: " + maxSafeBorrow);
+console.log("ether: " + ethers.utils.formatEther(maxSafeBorrow));
+  //return await borrow(vToken, maxSafeBorrow.sub(debt));
+  return Promise.resolve();
 }
 
 //borrow method without checks
@@ -85,7 +88,7 @@ export const borrow = async (vToken: VToken, amount: BigNumber): Promise<void> =
   const tx = await contract.borrow(amount);
   const receipt = await tx.wait();
 
-  console.log("borrow(" + vToken.symbol + ") tx hash: " + receipt);
+  console.log("borrow(" + vToken.symbol + ") tx hash: " + receipt.transactionHash);
 
   return Promise.resolve();
 }
