@@ -20,11 +20,11 @@ const init = async (): Promise<void> => {
 
   //borrow
   try {
-    await Venus.borrowSafe(vBNB);
+    //await Venus.borrowSafe(vBNB);
   } catch(e) {
     console.log(e);
   }
-/*
+
   //repay
   try {
     await Venus.repay(vBNB);
@@ -34,11 +34,11 @@ const init = async (): Promise<void> => {
 
   //redeem
   try {
-    await Venus.redeem(vBNB);
+    //await Venus.redeem(vBNB);
   } catch(e) {
     console.log(e);
   }
-*/
+
 }
 
 

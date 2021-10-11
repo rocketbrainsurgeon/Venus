@@ -72,13 +72,10 @@ export const borrowSafe = async (vToken: VToken): Promise<void> => {
 
   const vTokenContract = await getVTokenContract(vToken);
   const [,deposit,debt,] = await vTokenContract.getAccountSnapshot(wallet.address);
-console.log("deposit: " + deposit);
-console.log("debt: " + debt);
-  const maxSafeBorrow: BigNumber = deposit.mul(collateralFactor).div(2);
-console.log("maxSafeBorrow: " + maxSafeBorrow);
-console.log("ether: " + ethers.utils.formatEther(maxSafeBorrow));
-  //return await borrow(vToken, maxSafeBorrow.sub(debt));
-  return Promise.resolve();
+  //Venus uses 1/2 of the collateral factor as the safe borrow amount
+  const maxSafeBorrow: BigNumber = deposit.mul(collateralFactor).div("1000000000000000000").div(2);
+  return await borrow(vToken, maxSafeBorrow.sub(debt));
+  //return Promise.resolve();
 }
 
 //borrow method without checks
@@ -99,12 +96,11 @@ export const repay = async (vToken: VToken): Promise<void> => {
   const [wallet,] = getConnection();
   const contract = await getVTokenContract(vToken);
 
-  const [,, borrowBalance,] = await contract.getAccountSnapshot(wallet.address);
-
-  const tx = await contract.repayBorrow(borrowBalance);
+  const [,, debt,] = await contract.getAccountSnapshot(wallet.address);
+  const tx = await contract.repayBorrow({value:debt});
   const receipt = await tx.wait();
 
-  console.log("repay(" + vToken.symbol + ") tx hash: " + receipt);
+  console.log("repay(" + vToken.symbol + ") tx hash: " + receipt.transactionHash);
 
   return Promise.resolve();
 }
